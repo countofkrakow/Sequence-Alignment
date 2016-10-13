@@ -34,13 +34,13 @@ def smith_waterman(seq1, seq2, gap_penalty=-4, sf=scoring.ScoreFunction()):
                 global_max_i = i
                 global_max_j = j
 
-    return trace_matrix, global_max_i, global_max_j, global_max
+    return trace_matrix, global_max_i, global_max_j, global_max, score_matrix
 
-def calculate_pval(seq1, seq2, score, n=1000, algo=smith_waterman):
+def calculate_pval(seq1, seq2, score, n, algo=smith_waterman):
     k = 0
     for i in range(n):
         perm_seq2 = ''.join(random.sample(seq2, len(seq2)))
-        _, _, _, max = algo(seq1, perm_seq2)
+        _, _, _, max, _ = algo(seq1, perm_seq2)
         if max >= score:
             k += 1
     return (k+1)/(n+1)
@@ -84,6 +84,8 @@ def parse_args():
     # argument parsing
     parser = argparse.ArgumentParser(description="performs sequence alignment on two genetic sequences.")
     parser.add_argument('-f', '--file', action='store_true')
+    parser.add_argument('-am', '--alignment_matrix', action='store_true', default=False)
+    parser.add_argument('--pval_trials', default=1000, type=int)
     algo = parser.add_mutually_exclusive_group()
     algo.add_argument('-sw', '--smith_waterman', action='store_true', default=True)
     algo.add_argument('-nw', '--needleman_wunsch', action='store_true')
@@ -96,12 +98,17 @@ if __name__ == "__main__":
 
     # file names as arguments
     if args.file:
-        seqname1 = args.sequence1
-        seqname2 = args.sequence2
-        with open(seqname1, 'r') as file:
-            seq1=file.read().replace('\n', '')
-        with open(seqname2, 'r') as file:
-            seq2=file.read().replace('\n', '')
+        fname1 = args.sequence1
+        fname2 = args.sequence2
+        with open(fname1, 'r') as file:
+            f = file.read().split('\n')
+            seqname1 = f[0].split('|')[1]
+            seq1=''.join(f[1:])
+
+        with open(fname2, 'r') as file:
+            f = file.read().split('\n')
+            seqname2 = f[0].split('|')[1]
+            seq2=''.join(f[1:])
 
     # raw sequences as arguments
     else:
@@ -111,9 +118,9 @@ if __name__ == "__main__":
         seq2 = args.sequence2
 
     if args.smith_waterman:
-        trace_matrix, trace_max_i, trace_max_j, global_max = smith_waterman(seq1, seq2)
+        trace_matrix, trace_max_i, trace_max_j, global_max, alignment_matrix = smith_waterman(seq1, seq2)
         s1, s2, relation = trace_alignment(trace_matrix, trace_max_i, trace_max_j, seq1, seq2)
-        pval = calculate_pval(seq1, seq2, global_max)
+        pval = calculate_pval(seq1, seq2, global_max, args.pval_trials)
     elif args.needleman_wunsch:
         pass
     else:
@@ -122,9 +129,9 @@ if __name__ == "__main__":
     line1 = trace_max_i - len(s1) + s1.count('-') + 1
     line2 = trace_max_j - len(s2) + s2.count('-') + 1
     while s1:
-        print('{0:9}{1:5d}  {2:60}'.format(seqname1 + ':', line1, s1[:60]))
-        print('{0:16}{1:60}'.format(' ',relation[:60]))
-        print('{0:9}{1:5d}  {2:60}'.format(seqname2 + ':', line2, s2[:60]))
+        print('{0:15}{1:5d}  {2:60}'.format(seqname1 + ':', line1, s1[:60]))
+        print('{0:20}  {1:60}'.format(' ',relation[:60]))
+        print('{0:15}{1:5d}  {2:60}'.format(seqname2 + ':', line2, s2[:60]))
         print()
 
         line1 = line1 + 60 - s1[:60].count('-')
@@ -136,3 +143,6 @@ if __name__ == "__main__":
 
 
     print(s1 + '\n' + relation + '\n' + s2 + '\npval: ' + str(pval) + '\noptimal score: ' + str(global_max))
+    if args.alignment_matrix:
+        for row in alignment_matrix:
+            print('\t'.join([str(e) for e in row]))
