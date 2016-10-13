@@ -3,6 +3,8 @@ import argparse
 import sys
 import random
 
+# 'python ./align.py -h' for usage information
+
 def smith_waterman(seq1, seq2, gap_penalty=-4, sf=scoring.ScoreFunction()):
     n = len(seq1)
     m = len(seq2)
@@ -83,12 +85,12 @@ def needleman_wunsch():
 def parse_args():
     # argument parsing
     parser = argparse.ArgumentParser(description="performs sequence alignment on two genetic sequences.")
-    parser.add_argument('-f', '--file', action='store_true')
-    parser.add_argument('-am', '--alignment_matrix', action='store_true', default=False)
-    parser.add_argument('--pval_trials', default=1000, type=int)
+    parser.add_argument('-f', '--file', action='store_true', help='Use this flag when arguments are filenames. The default assumption is that raw sequences are being input.')
+    parser.add_argument('-am', '--alignment_matrix', action='store_true', default=False, help='Tells the script to print the alignment matrix.')
+    parser.add_argument('--pval_trials', default=1000, type=int, help='Number of random permutations to use when calculating pval.')
     algo = parser.add_mutually_exclusive_group()
-    algo.add_argument('-sw', '--smith_waterman', action='store_true', default=True)
-    algo.add_argument('-nw', '--needleman_wunsch', action='store_true')
+    algo.add_argument('-sw', '--smith_waterman', action='store_true', default=True, help='Flag to use Smith Waterman algorithm.')
+    algo.add_argument('-nw', '--needleman_wunsch', action='store_true', help='Flag to use Needlman Wunsch algorithm.')
     parser.add_argument('sequence1')
     parser.add_argument('sequence2')
     return parser.parse_args(sys.argv[1:])

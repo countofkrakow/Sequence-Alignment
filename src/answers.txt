@@ -1,6 +1,8 @@
 Christopher Nakovski
 Comp Bio hw1
 
+note: for usage information, input 'python ./align.py -h'
+
 5.
 Sequence 1:        1  d-eadly
                       d ea ly
@@ -16,6 +18,14 @@ optimal score: 20
 0	2	2	2	6	9	5	13	9	5
 0	0	0	0	2	5	7	9	20	16
 
+6. Too much to put in answers.txt. Please use the code to print alignments.
+
+7.
+pvals with 1000 random trials:
+    P15172 versus Q10574: 0.000999000999000999
+    P15172 versus O95363: 0.5664335664335665
+
+8.
         P15172  P17542  P10085  P16075  P13904  Q90477  Q8IU24  P22816  Q10574  O95363
 P15172  1709    143     1500    1020    978     893     428     368     118     56
 P17542          1731    128     129     128     112     144     123     156     66
