@@ -128,6 +128,11 @@ if __name__ == "__main__":
 
     line1 = trace_max_i - len(s1) + s1.count('-') + 1
     line2 = trace_max_j - len(s2) + s2.count('-') + 1
+
+    if args.alignment_matrix:
+        for row in alignment_matrix:
+            print('\t'.join([str(e) for e in row]))
+        print()
     while s1:
         print('{0:15}{1:5d}  {2:60}'.format(seqname1 + ':', line1, s1[:60]))
         print('{0:20}  {1:60}'.format(' ',relation[:60]))
@@ -142,7 +147,6 @@ if __name__ == "__main__":
         relation = relation[60:]
 
 
-    print(s1 + '\n' + relation + '\n' + s2 + '\npval: ' + str(pval) + '\noptimal score: ' + str(global_max))
-    if args.alignment_matrix:
-        for row in alignment_matrix:
-            print('\t'.join([str(e) for e in row]))
+
+    print(s1 + '\n' + relation + '\n' + s2 + '\ntotal score: ' + str(global_max) + '\npval: ' + str(pval))
+
