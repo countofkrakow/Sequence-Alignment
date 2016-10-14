@@ -2,7 +2,7 @@ import scoring
 import argparse
 import sys
 import random
-
+# Chris Nakovski
 # 'python ./align.py -h' for usage information
 
 def smith_waterman(seq1, seq2, gap_penalty=-4, sf=scoring.ScoreFunction()):
@@ -21,6 +21,7 @@ def smith_waterman(seq1, seq2, gap_penalty=-4, sf=scoring.ScoreFunction()):
                     score_matrix[i][j-1] + gap_penalty,
                     0)
 
+            # mark the path of an optimal alignment. l for left, u for up, ul for upper left.
             if score_matrix[i-1][j-1] + sf.getScore(seq1[i-1], seq2[j-1]) == score_matrix[i][j]:
                 trace_matrix[i][j] = 'ul'
             elif score_matrix[i-1][j] + gap_penalty == score_matrix[i][j]:
@@ -38,11 +39,12 @@ def smith_waterman(seq1, seq2, gap_penalty=-4, sf=scoring.ScoreFunction()):
 
     return trace_matrix, global_max_i, global_max_j, global_max, score_matrix
 
-def calculate_pval(seq1, seq2, score, n, algo=smith_waterman):
+# Tests on random permutations 1000 times
+def calculate_pval(seq1, seq2, score, n):
     k = 0
     for i in range(n):
         perm_seq2 = ''.join(random.sample(seq2, len(seq2)))
-        _, _, _, max, _ = algo(seq1, perm_seq2)
+        _, _, _, max, _ = smith_waterman(seq1, perm_seq2)
         if max >= score:
             k += 1
     return (k+1)/(n+1)
@@ -53,6 +55,8 @@ def trace_alignment(trace_matrix, trace_max_i, trace_max_j, seq1, seq2, sf=scori
     s1i = trace_max_i
     s2i = trace_max_j
     relation = ''
+
+    # follows the path back to a zero or something
     while(trace_matrix[s1i][s2i] is not None):
 
         if trace_matrix[s1i][s2i] == 'u':
@@ -79,8 +83,9 @@ def trace_alignment(trace_matrix, trace_max_i, trace_max_j, seq1, seq2, sf=scori
             s2i -= 1
     return seq1_aligned, seq2_aligned, relation
 
-def needleman_wunsch():
-    pass
+def format_e(n):
+    a = '%E' % n
+    return a.split('E')[0].rstrip('0').rstrip('.') + 'E' + a.split('E')[1]
 
 def parse_args():
     # argument parsing
@@ -88,9 +93,6 @@ def parse_args():
     parser.add_argument('-f', '--file', action='store_true', help='Use this flag when arguments are filenames. The default assumption is that raw sequences are being input.')
     parser.add_argument('-am', '--alignment_matrix', action='store_true', default=False, help='Tells the script to print the alignment matrix.')
     parser.add_argument('--pval_trials', default=1000, type=int, help='Number of random permutations to use when calculating pval.')
-    algo = parser.add_mutually_exclusive_group()
-    algo.add_argument('-sw', '--smith_waterman', action='store_true', default=True, help='Flag to use Smith Waterman algorithm.')
-    algo.add_argument('-nw', '--needleman_wunsch', action='store_true', help='Flag to use Needlman Wunsch algorithm.')
     parser.add_argument('sequence1')
     parser.add_argument('sequence2')
     return parser.parse_args(sys.argv[1:])
@@ -119,14 +121,9 @@ if __name__ == "__main__":
         seq1 = args.sequence1
         seq2 = args.sequence2
 
-    if args.smith_waterman:
-        trace_matrix, trace_max_i, trace_max_j, global_max, alignment_matrix = smith_waterman(seq1, seq2)
-        s1, s2, relation = trace_alignment(trace_matrix, trace_max_i, trace_max_j, seq1, seq2)
-        pval = calculate_pval(seq1, seq2, global_max, args.pval_trials)
-    elif args.needleman_wunsch:
-        pass
-    else:
-        print("No algorithm to align with")
+    trace_matrix, trace_max_i, trace_max_j, global_max, alignment_matrix = smith_waterman(seq1, seq2)
+    s1, s2, relation = trace_alignment(trace_matrix, trace_max_i, trace_max_j, seq1, seq2)
+    pval = calculate_pval(seq1, seq2, global_max, args.pval_trials)
 
     line1 = trace_max_i - len(s1) + s1.count('-') + 1
     line2 = trace_max_j - len(s2) + s2.count('-') + 1
@@ -148,7 +145,7 @@ if __name__ == "__main__":
         s2 = s2[60:]
         relation = relation[60:]
 
+    print(s1 + '\n' + relation + '\n' + s2 + '\ntotal score: ' + str(global_max) + '\npval: ' + format_e(pval))
 
 
-    print(s1 + '\n' + relation + '\n' + s2 + '\ntotal score: ' + str(global_max) + '\npval: ' + str(pval))
 
