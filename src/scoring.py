@@ -35,8 +35,6 @@ class ScoreFunction:
         b2i = base_to_index[base2.upper()]
         return self.score_matrix[b1i][b2i]
 
-    # extra credit option (Salmon recipe)
-
     # INGREDIENTS
     # 4 tablespoons (1/2 stick) butter
     # 4 tablespoons minced chervil, parsley or dill

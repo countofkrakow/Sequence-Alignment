@@ -8,12 +8,10 @@ for i, f1, in enumerate(fnames):
 
         with open(fname1, 'r') as file:
             f = file.read().split('\n')
-            #seqname1 = f[0].split('|')[1]
             seq1=''.join(f[1:])
 
         with open(fname2, 'r') as file:
             f = file.read().split('\n')
-            #seqname2 = f[0].split('|')[1]
             seq2=''.join(f[1:])
 
         trace_matrix, trace_max_i, trace_max_j, global_max, alignment_matrix = align.smith_waterman(seq1, seq2)
@@ -34,3 +32,5 @@ for i, f1, in enumerate(fnames):
             s1 = s1[60:]
             s2 = s2[60:]
             relation = relation[60:]
+        print('total score: ' + str(global_max))
+        print()
